@@ -21,8 +21,6 @@ NSTimeInterval kSMCalloutViewRepositionDelayForUIScrollView = 1.0/3.0;
 #define CALLOUT_DEFAULT_MIN_WIDTH 75 // our image-based background graphics limit us to this minimum width...
 #define CALLOUT_DEFAULT_HEIGHT 70 // ...and allow only for this exact height.
 #define CALLOUT_DEFAULT_WIDTH 153 // default "I give up" width when we are asked to present in a space less than our min width
-#define TITLE_MARGIN 17 // the title view's normal horizontal margin from the edges of our callout view
-#define TITLE_TOP 11 // the top of the title view when no subtitle is present
 #define TITLE_SUB_TOP 3 // the top of the title view when a subtitle IS present
 #define TITLE_HEIGHT 22 // title height, fixed
 #define SUBTITLE_TOP 25 // the top of the subtitle, when present
@@ -54,6 +52,7 @@ NSTimeInterval kSMCalloutViewRepositionDelayForUIScrollView = 1.0/3.0;
     if (self = [super initWithFrame:frame]) {
         _presentAnimation = SMCalloutAnimationBounce;
         _dismissAnimation = SMCalloutAnimationFade;
+        _calloutInsets = UIEdgeInsetsMake(11, 17, 11, 17);
         self.backgroundColor = [UIColor clearColor];
     }
     return self;
@@ -126,19 +125,19 @@ NSTimeInterval kSMCalloutViewRepositionDelayForUIScrollView = 1.0/3.0;
     if (self.leftAccessoryView)
         return ACCESSORY_MARGIN + self.leftAccessoryView.$width + TITLE_ACCESSORY_MARGIN;
     else
-        return TITLE_MARGIN;
+        return self.calloutInsets.left;
 }
 
 - (CGFloat)innerContentMarginRight {
     if (self.rightAccessoryView)
         return ACCESSORY_MARGIN + self.rightAccessoryView.$width + TITLE_ACCESSORY_MARGIN;
     else
-        return TITLE_MARGIN;
+        return self.calloutInsets.right;
 }
 
 - (CGFloat)calloutHeight {
     if (self.contentView)
-        return self.contentView.$height + TITLE_TOP*2 + ANCHOR_HEIGHT + BOTTOM_ANCHOR_MARGIN;
+        return self.contentView.$height + self.calloutInsets.top + self.calloutInsets.bottom + ANCHOR_HEIGHT + BOTTOM_ANCHOR_MARGIN;
     else
         return CALLOUT_DEFAULT_HEIGHT;
 }
@@ -455,7 +454,7 @@ NSTimeInterval kSMCalloutViewRepositionDelayForUIScrollView = 1.0/3.0;
     CGFloat dy = arrowDirection == SMCalloutArrowDirectionUp ? TOP_ANCHOR_MARGIN : 0;
     
     self.titleViewOrDefault.$x = self.innerContentMarginLeft;
-    self.titleViewOrDefault.$y = (self.subtitleView || self.subtitle.length ? TITLE_SUB_TOP : TITLE_TOP) + dy;
+    self.titleViewOrDefault.$y = (self.subtitleView || self.subtitle.length ? TITLE_SUB_TOP : self.calloutInsets.top) + dy;
     self.titleViewOrDefault.$width = self.$width - self.innerContentMarginLeft - self.innerContentMarginRight;
     
     self.subtitleViewOrDefault.$x = self.titleViewOrDefault.$x;
@@ -464,20 +463,20 @@ NSTimeInterval kSMCalloutViewRepositionDelayForUIScrollView = 1.0/3.0;
     
     self.leftAccessoryView.$x = ACCESSORY_MARGIN;
     if (self.contentView)
-        self.leftAccessoryView.$y = TITLE_TOP + [self centeredPositionOfView:self.leftAccessoryView relativeToView:self.contentView] + dy;
+        self.leftAccessoryView.$y = self.calloutInsets.top + [self centeredPositionOfView:self.leftAccessoryView relativeToView:self.contentView] + dy;
     else
         self.leftAccessoryView.$y = ACCESSORY_TOP + [self centeredPositionOfView:self.leftAccessoryView ifSmallerThan:ACCESSORY_HEIGHT] + dy;
     
     self.rightAccessoryView.$x = self.$width-ACCESSORY_MARGIN-self.rightAccessoryView.$width;
     if (self.contentView)
-        self.rightAccessoryView.$y = TITLE_TOP + [self centeredPositionOfView:self.rightAccessoryView relativeToView:self.contentView] + dy;
+        self.rightAccessoryView.$y = self.calloutInsets.top + [self centeredPositionOfView:self.rightAccessoryView relativeToView:self.contentView] + dy;
     else
         self.rightAccessoryView.$y = ACCESSORY_TOP + [self centeredPositionOfView:self.rightAccessoryView ifSmallerThan:ACCESSORY_HEIGHT] + dy;
     
     
     if (self.contentView) {
         self.contentView.$x = self.innerContentMarginLeft;
-        self.contentView.$y = TITLE_TOP + dy;
+        self.contentView.$y = self.calloutInsets.top + dy;
     }
 }
 
